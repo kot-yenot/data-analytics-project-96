@@ -1,41 +1,49 @@
-WITH aggregated_leads AS (
+WITH latest_sessions AS (
     SELECT
         visitor_id,
-        SUM(amount) AS total_amount_per_visitor
-    FROM leads
+        MAX(visit_date) AS last_visit_date
+    FROM sessions
+    WHERE medium <> 'organic'
     GROUP BY visitor_id
 ),
 
-ranked_sessions AS (
+filtered_sessions AS (
     SELECT
         s.visitor_id,
         s.visit_date,
-        s.source AS utm_source,
-        s.medium AS utm_medium,
-        s.campaign AS utm_campaign,
-        l.total_amount_per_visitor AS amount,
-        ROW_NUMBER() OVER (
-            PARTITION BY s.visitor_id
-            ORDER BY s.visit_date DESC
-        ) AS rn
+        s.source,
+        s.medium,
+        s.campaign,
+        l.lead_id,
+        l.created_at,
+        l.amount,
+        l.closing_reason,
+        l.status_id
     FROM sessions AS s
-    LEFT JOIN aggregated_leads AS l
+    INNER JOIN latest_sessions AS ls
+        ON
+            s.visitor_id = ls.visitor_id
+            AND s.visit_date = ls.last_visit_date
+    LEFT JOIN leads AS l
         ON s.visitor_id = l.visitor_id
     WHERE s.medium <> 'organic'
 )
 
 SELECT
-    visitor_id,
-    visit_date,
-    utm_source,
-    utm_medium,
-    utm_campaign,
-    amount
-FROM ranked_sessions
-WHERE rn = 1
+    fs.visitor_id,
+    fs.visit_date,
+    fs.source AS utm_source,
+    fs.medium AS utm_medium,
+    fs.campaign AS utm_campaign,
+    fs.lead_id,
+    fs.created_at,
+    fs.closing_reason,
+    fs.status_id,
+    SUM(fs.amount) OVER (PARTITION BY fs.visitor_id) AS amount
+FROM filtered_sessions AS fs
 ORDER BY
     amount DESC NULLS LAST,
-    visit_date ASC,
-    utm_source ASC,
-    utm_medium ASC,
-    utm_campaign ASC;
+    fs.visit_date ASC,
+    fs.source ASC,
+    fs.medium ASC,
+    fs.campaign ASC;
