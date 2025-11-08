@@ -91,12 +91,12 @@ SELECT
     utm_source,
     utm_medium,
     utm_campaign,
-    leads_count,
-    purchases_count,
-    revenue,
     SUM(daily_spent) OVER (
         PARTITION BY visit_date, utm_source, utm_medium, utm_campaign
-    ) AS daily_spent
+    ) AS total_cost,
+    leads_count,
+    purchases_count,
+    revenue
 FROM final_report_with_ads
 where row_number = 1
 ORDER BY visit_date asc, visitors_count desc, utm_source asc, utm_medium asc, utm_campaign asc, revenue desc NULLS last;
