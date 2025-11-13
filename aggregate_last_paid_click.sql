@@ -1,28 +1,22 @@
-WITH latest_sessions AS (
-    SELECT
-        visitor_id,
-        MAX(CAST(s.visit_date AS DATE)) AS last_visit_date
-    FROM sessions as s
-    WHERE medium <> 'organic'
-    GROUP BY visitor_id
-),
-filtered_sessions AS (
+WITH filtered_sessions AS (
     SELECT
         s.visitor_id,
         CAST(s.visit_date AS DATE) AS visit_date,
-        s.source as utm_source,
-        s.medium as utm_medium,
-        s.campaign as utm_campaign,
+        s.source AS utm_source,
+        s.medium AS utm_medium,
+        s.campaign AS utm_campaign,
         l.lead_id,
         l.amount,
-        l.status_id
+        l.status_id,
+        ROW_NUMBER() OVER (
+            PARTITION BY s.visitor_id, l.lead_id
+            ORDER BY s.visit_date DESC
+        ) AS rn  -- нумеруем визиты для каждого посетителя/лида по убыванию даты
     FROM sessions AS s
-    INNER JOIN latest_sessions AS ls
-        ON s.visitor_id = ls.visitor_id
-        AND CAST(s.visit_date AS DATE) = ls.last_visit_date
     LEFT JOIN leads AS l
         ON s.visitor_id = l.visitor_id
-    WHERE s.medium <> 'organic' 
+        AND CAST(l.created_at AS DATE) > CAST(s.visit_date AS DATE)
+    WHERE s.medium <> 'organic'
 ),
 vk AS (
     SELECT 
@@ -71,6 +65,7 @@ group_days AS (
         ON gd.visit_date = ya.date
         AND gd.utm_source = ya.utm_source
         AND gd.utm_campaign = ya.utm_campaign
+        WHERE rn = 1  -- оставляем только последний визит для каждой пары посетитель/лид
     GROUP BY 
         gd.visit_date,
         gd.utm_source,
@@ -79,22 +74,22 @@ group_days AS (
         vk.total_spent,
         ya.total_spent
 )
-    SELECT 
-        visit_date,
-        visitors_count,
-        utm_source,
-        utm_medium,
-        utm_campaign,
-        total_cost,
-        leads_count,
-        purchases_count,
-        revenue
-    FROM group_days
-    ORDER BY 
-        visit_date, 
-        visitors_count DESC,
-        utm_source ASC,
-        utm_medium ASC,
-        utm_campaign ASC,
-        revenue DESC NULLS LAST
+SELECT 
+    visit_date,
+    visitors_count,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    total_cost,
+    leads_count,
+    purchases_count,
+    revenue
+FROM group_days
+ORDER BY 
+    visit_date, 
+    visitors_count DESC,
+    utm_source ASC,
+    utm_medium ASC,
+    utm_campaign ASC,
+    revenue DESC NULLS LAST
 LIMIT 15;
