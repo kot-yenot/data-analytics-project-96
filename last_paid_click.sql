@@ -20,7 +20,6 @@ WITH filtered_sessions AS (
         AND s.visit_date < l.created_at
     WHERE s.medium <> 'organic'
 ),
-
 final_sessions AS (
     SELECT
         visitor_id,
@@ -36,7 +35,6 @@ final_sessions AS (
     FROM filtered_sessions
     WHERE rn = 1
 )
-
 SELECT
     fs.visitor_id,
     fs.visit_date,
@@ -45,12 +43,12 @@ SELECT
     fs.utm_campaign,
     fs.lead_id,
     fs.created_at,
-    SUM(fs.amount) OVER (PARTITION BY fs.visitor_id) AS total_amount,
+    SUM(fs.amount) OVER (PARTITION BY fs.visitor_id) AS amount,
     fs.closing_reason,
     fs.status_id
 FROM final_sessions AS fs
 ORDER BY
-    total_amount DESC NULLS LAST,
+    amount DESC NULLS LAST,
     visit_date ASC,
     utm_source ASC,
     utm_medium ASC,
