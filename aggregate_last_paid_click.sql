@@ -6,17 +6,23 @@ WITH filtered_sessions AS (
         s.medium AS utm_medium,
         s.campaign AS utm_campaign,
         l.lead_id,
+        l.created_at,
         l.amount,
         l.status_id,
         ROW_NUMBER() OVER (
-            PARTITION BY s.visitor_id, l.lead_id
+            PARTITION BY s.visitor_id, l.visitor_id
             ORDER BY s.visit_date DESC
-        ) AS rn  -- нумеруем визиты для каждого посетителя/лида по убыванию даты
+        ) AS rn
     FROM sessions AS s
     LEFT JOIN leads AS l
         ON s.visitor_id = l.visitor_id
-        AND CAST(l.created_at AS DATE) > CAST(s.visit_date AS DATE)
+        AND CAST(s.visit_date AS DATE) < cast(l.created_at as date)
     WHERE s.medium <> 'organic'
+),
+final_sessions AS (
+    SELECT *
+    FROM filtered_sessions
+    WHERE rn = 1
 ),
 vk AS (
     SELECT 
@@ -55,7 +61,7 @@ group_days AS (
         SUM(CASE WHEN status_id = 142 THEN 1 ELSE 0 END) AS purchases_count,
         SUM(amount) AS revenue,
         COALESCE(vk.total_spent, ya.total_spent, 0) AS total_cost
-    FROM filtered_sessions gd
+    FROM final_sessions gd
     LEFT JOIN vk
         ON gd.visit_date = vk.date
         AND gd.utm_source = vk.utm_source
@@ -65,7 +71,6 @@ group_days AS (
         ON gd.visit_date = ya.date
         AND gd.utm_source = ya.utm_source
         AND gd.utm_campaign = ya.utm_campaign
-        WHERE rn = 1  -- оставляем только последний визит для каждой пары посетитель/лид
     GROUP BY 
         gd.visit_date,
         gd.utm_source,
