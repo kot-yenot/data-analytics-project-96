@@ -28,14 +28,14 @@ aggregated_data as (
         utm_campaign,
         date(visit_date) as visit_date,
         count(visitor_id) as visitors_count,
-        count(case when created_at is not null then visitor_id end) 
+        count(case when created_at is not null then visitor_id end)
             as leads_count,
         count(case when status_id = 142 then visitor_id end) as purchases_count,
         sum(case when status_id = 142 then amount end) as revenue
     from visitors_with_leads
     where rn = 1
-group by 1, 2, 3, 4),
-
+    group by 1, 2, 3, 4
+),
 marketing_data as (
     select
         date(campaign_date) as visit_date,
@@ -52,9 +52,9 @@ marketing_data as (
         utm_medium,
         utm_campaign,
         sum(daily_spent) as total_cost
-from vk_ads 
-group by 1, 2, 3, 4)
-
+    from vk_ads
+    group by 1, 2, 3, 4
+)
 select
     a.visit_date,
     a.visitors_count,
@@ -65,9 +65,11 @@ select
     a.leads_count,
     a.purchases_count,
     a.revenue
-    from aggregated_data as a
-    left join marketing_data as m
-    on a.visit_date = m.visit_date and lower(a.utm_source) = m.utm_source
+from aggregated_data as a
+left join marketing_data as m
+    on 
+        a.visit_date = m.visit_date and lower(a.utm_source) = m.utm_source
         and lower(a.utm_medium) = m.utm_medium
         and lower(a.utm_campaign) = m.utm_campaign 
 order by 9 desc nulls last, 1, 2 desc, 3, 4;
+
