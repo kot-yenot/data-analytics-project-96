@@ -16,8 +16,8 @@ WITH filtered_sessions AS (
         ) AS rn
     FROM sessions AS s
     LEFT JOIN leads AS l
-        ON s.visitor_id = l.visitor_id
-        AND s.visit_date < l.created_at
+            ON s.visitor_id = l.visitor_id
+            AND s.visit_date < l.created_at
     WHERE s.medium <> 'organic'
 ),
 final_sessions AS (
@@ -35,6 +35,7 @@ final_sessions AS (
     FROM filtered_sessions
     WHERE rn = 1
 )
+
 SELECT
     fs.visitor_id,
     fs.visit_date,
@@ -52,4 +53,4 @@ ORDER BY
     visit_date ASC,
     utm_source ASC,
     utm_medium ASC,
-    utm_campaign asc;
+    utm_campaign ASC;
