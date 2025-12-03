@@ -36,6 +36,7 @@ aggregated_data as (
     where rn = 1
     group by 1, 2, 3, 4
 ),
+    
 marketing_data as (
     select
         date(campaign_date) as visit_date,
@@ -55,6 +56,7 @@ marketing_data as (
     from vk_ads
     group by 1, 2, 3, 4
 )
+
 select
     a.visit_date,
     a.visitors_count,
@@ -67,9 +69,8 @@ select
     a.revenue
 from aggregated_data as a
 left join marketing_data as m
-    on 
+    on
         a.visit_date = m.visit_date and lower(a.utm_source) = m.utm_source
         and lower(a.utm_medium) = m.utm_medium
-        and lower(a.utm_campaign) = m.utm_campaign 
+        and lower(a.utm_campaign) = m.utm_campaign
 order by 9 desc nulls last, 1, 2 desc, 3, 4;
-
