@@ -20,6 +20,7 @@ with visitors_with_leads as (
             and s.visit_date <= l.created_at
     where s.medium != 'organic' 
 ),
+
 aggregated_data as (
     select
         utm_source,
@@ -40,15 +41,15 @@ marketing_data as (
         utm_medium,
         utm_campaign,
         sum(daily_spent) as total_cost 
-from ya_ads
-group by 1, 2, 3, 4 
-union all 
-    select 
-        date(campaign_date) as visit_date, 
-        utm_source, 
-        utm_medium, 
-        utm_campaign, 
-        sum(daily_spent) as total_cost 
+    from ya_ads
+    group by 1, 2, 3, 4
+    union all
+    select
+        date(campaign_date) as visit_date,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        sum(daily_spent) as total_cost
 from vk_ads 
 group by 1, 2, 3, 4 )
 select
@@ -63,7 +64,9 @@ select
     a.revenue
 from aggregated_data as a
 left join marketing_data as m
-on a.visit_date = m.visit_date and lower(a.utm_source) = m.utm_source and lower(a.utm_medium) = m.utm_medium and lower(a.utm_campaign) = m.utm_campaign 
+on a.visit_date = m.visit_date and lower(a.utm_source) = m.utm_source
+    and lower(a.utm_medium) = m.utm_medium and lower(a.utm_campaign) = m.utm_campaign 
 order by 9 desc nulls last, 1, 2 desc, 3, 4;
+
 
 
