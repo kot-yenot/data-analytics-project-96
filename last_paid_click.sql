@@ -46,9 +46,9 @@ SELECT
     fs.utm_campaign,
     fs.lead_id,
     fs.created_at,
-    SUM(fs.amount) OVER (PARTITION BY fs.visitor_id) AS amount,
     fs.closing_reason,
-    fs.status_id
+    fs.status_id,
+    SUM(fs.amount) OVER (PARTITION BY fs.visitor_id) AS amount
 FROM final_sessions AS fs
 ORDER BY
     amount DESC NULLS LAST,
@@ -56,3 +56,4 @@ ORDER BY
     utm_source ASC,
     utm_medium ASC,
     utm_campaign ASC;
+
