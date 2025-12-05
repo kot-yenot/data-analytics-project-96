@@ -24,5 +24,13 @@ select
     total_cost / purchases_count as cppu,
     (revenue - total_cost) / total_cost * 100 as roi
   from voronka;
+SELECT 
+  visit_date,
+  sum(leads_count),
+  SUM(leads_count) OVER () AS total_leads,
+  ROUND(SUM(leads_count) OVER (ORDER BY visit_date) * 100.0 / SUM(leads_count) OVER (), 2) AS percentage
+FROM voronka
+group by visit_date
+ORDER BY visit_date
 
 
