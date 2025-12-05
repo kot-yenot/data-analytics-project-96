@@ -49,4 +49,3 @@ left join leads on sessions.visitor_id = leads.visitor_id
 where sessions.medium = 'organic'
 group by date(sessions.visit_date)
 order by sessions.visit_date;
-
