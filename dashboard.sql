@@ -19,8 +19,16 @@ select
   group by utm_source
   order by revenue desc nulls last;
 
-select 
-    *,
+select
+    visit_date,
+    visitors_count,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    total_cost,
+    leads_count,
+    purchases_count,
+    revenue,
     total_cost / visitors_count as cpu,
     total_cost / leads_count as cpl,
     total_cost / purchases_count as cppu,
@@ -42,3 +50,4 @@ left join leads on sessions.visitor_id = leads.visitor_id
 where sessions.medium = 'organic'
 group by date(sessions.visit_date)
 order by sessions.visit_date;
+
