@@ -17,7 +17,7 @@ select
 from voronka
 where utm_source = 'vk' or utm_source = 'yandex'
 group by utm_source
-  order by revenue desc nulls last;
+order by revenue desc nulls last;
 select
     visit_date,
     visitors_count,
@@ -49,3 +49,4 @@ left join leads on sessions.visitor_id = leads.visitor_id
 where sessions.medium = 'organic'
 group by date(sessions.visit_date)
 order by sessions.visit_date;
+
