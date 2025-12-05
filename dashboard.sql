@@ -25,12 +25,19 @@ select
     (revenue - total_cost) / total_cost * 100 as roi
   from voronka;
 SELECT 
-  visit_date,
-  sum(leads_count),
-  SUM(leads_count) OVER () AS total_leads,
-  ROUND(SUM(leads_count) OVER (ORDER BY visit_date) * 100.0 / SUM(leads_count) OVER (), 2) AS percentage
-FROM voronka
-group by visit_date
-ORDER BY visit_date
-
+    date(sessions.visit_date) as visit_date,
+    COUNT(sessions.visitor_id) as visitors_count,
+    SUM(CASE 
+        WHEN status_id = 142 THEN 1.0
+        ELSE 0.0
+    END) / COUNT(sessions.visitor_id) * 100 AS purchases_percentage,
+    SUM(CASE 
+        WHEN status_id = 142 THEN 1
+        ELSE 0
+    END) as purchases_count
+FROM sessions
+LEFT JOIN leads ON sessions.visitor_id = leads.visitor_id
+WHERE source = 'organic'
+GROUP BY date(sessions.visit_date)
+ORDER BY visit_date;
 
