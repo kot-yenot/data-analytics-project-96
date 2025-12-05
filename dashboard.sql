@@ -11,9 +11,9 @@ group by visit_date
 order by visit_date
 select
     utm_source,
-    sum(visitors_count) as visitors_count,
-    sum(total_cost) as total_cost,
-    sum(revenue) as revenue
+    sum(visitors_count) as sum_visitors_count,
+    sum(total_cost) as sum_total_cost,
+    sum(revenue) as sum_revenue
   from voronka
   where utm_source = 'vk' or utm_source = 'yandex'
   group by utm_source
@@ -50,3 +50,4 @@ left join leads on sessions.visitor_id = leads.visitor_id
 where sessions.medium = 'organic'
 group by date(sessions.visit_date)
 order by sessions.visit_date;
+
