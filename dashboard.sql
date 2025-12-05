@@ -8,7 +8,7 @@ select
     ) as percentage
 from voronka
 group by visit_date
-order by visit_date
+order by visit_date;
 select
     utm_source,
     sum(visitors_count) as sum_visitors_count,
@@ -18,7 +18,6 @@ select
   where utm_source = 'vk' or utm_source = 'yandex'
   group by utm_source
   order by revenue desc nulls last;
-
 select
     visit_date,
     visitors_count,
